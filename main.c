@@ -12,7 +12,7 @@ int main(void)
     fp = fopen("programa", "r");
     if (fp == NULL)
     {
-        perror("Erro ao abrir arquivo");
+        printf("Erro ao abrir arquivo");
         return 1;
     }
     gera_codigo(fp, code, &funcLBS);
