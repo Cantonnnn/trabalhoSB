@@ -2,5 +2,5 @@
 .globl funcaoteste
 
 funcaoteste:
-    movl $100, %eax
+    movl %edi, %eax
     ret
