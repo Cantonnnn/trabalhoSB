@@ -1,13 +1,25 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "gera_codigo.h"
 
 void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
 {
-    unsigned char codigo[] ={0xB8, 0x64, 0x00, 0x00, 0x00, 0xC3};
-    int i;
-    for (i = 0; i < 6; i++)
-    {
-        code[i] = codigo[i];
-    }
+    char palavra[20];
+    int valor;
+    unsigned int bits;
+
+    fscanf(f, "%19s", palavra);
+    fscanf(f, "%19s", palavra);
+    fscanf(f, " $%d", &valor);
+    bits = (unsigned int) valor;
+
+    code[0] = 0xB8;
+    code[1] = bits & 0xFF;
+    code[2] = (bits >> 8) & 0xFF;
+    code[3] = (bits >> 16) & 0xFF;
+    code[4] = (bits >> 24) & 0xFF;
+    code[5] = 0xC3;
+
     *entry = (funcp) code;
 }
