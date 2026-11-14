@@ -116,30 +116,7 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = 0x45;
             code[i++] = deslocamento_pilha & 0xFF;
         }
-        else if (sscanf(linha, "v%d = p0 * p0", &var) == 1)
-        {
-            deslocamento_pilha = -8 - 4 * var;
-
-            if (!param_salvo)
-            {
-                code[i++] = 0x89;
-                code[i++] = 0x7D;
-                code[i++] = 0xFC;
-                param_salvo = 1;
-            }
-            code[i++] = 0x8B;
-            code[i++] = 0x45;
-            code[i++] = 0xFC;
-
-            code[i++] = 0x0F;
-            code[i++] = 0xAF;
-            code[i++] = 0x45;
-            code[i++] = 0xFC;
-
-            code[i++] = 0x89;
-            code[i++] = 0x45;
-            code[i++] = deslocamento_pilha & 0xFF;
-        }
+        
         else if (sscanf(linha, "ret $%d", &valor) == 1)
         {
             code[i++] = 0xB8;
@@ -162,13 +139,106 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             int desloDestino = -8 - 4 * var;
             int desloOrigem = -8 - 4 * origem;
 
+            unsigned int constante = (unsigned int) valor;
+
             code[i++] = 0x8B;
             code[i++] = 0x45;
             code[i++] = desloOrigem & 0xFF;
 
-            code[i++] = 0x83;
-            code[i++] = 0xE8;
-            code[i++] = valor & 0xFF;
+            if (valor >= -128 && valor <= 127)
+            {
+                code[i++] = 0x83;
+                code[i++] = 0xE8;
+                code[i++] = valor & 0xFF;
+            }
+            else
+            {
+                code[i++] = 0x81;
+                code[i++] = 0xE8;
+
+                code[i++] = constante & 0xFF;
+                code[i++] = (constante >> 8) & 0xFF;
+                code[i++] = (constante >> 16) & 0xFF;
+                code[i++] = (constante >> 24) & 0xFF;
+            }
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = p0 - $%d", &var, &valor) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            unsigned int constante = (unsigned int) valor;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            if (valor >= -128 && valor <= 127)
+            {
+                code[i++] = 0x83;
+                code[i++] = 0xE8;
+                code[i++] = valor & 0xFF;
+            }
+            else
+            {
+                code[i++] = 0x81;
+                code[i++] = 0xE8;
+
+                code[i++] = constante & 0xFF;
+                code[i++] = (constante >> 8) & 0xFF;
+                code[i++] = (constante >> 16) & 0xFF;
+                code[i++] = (constante >> 24) & 0xFF;
+            }
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d + v%d", &var, &origem, &num_func) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem1 = -8 - 4 * origem;
+            int desloOrigem2 = -8 - 4 * num_func;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem1 & 0xFF;
+
+            code[i++] = 0x03;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem2 & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d * v%d", &var, &origem, &num_func) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem1 = -8 - 4 * origem;
+            int desloOrigem2 = -8 - 4 * num_func;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem1 & 0xFF;
+
+            code[i++] = 0x0F;
+            code[i++] = 0xAF;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem2 & 0xFF;
 
             code[i++] = 0x89;
             code[i++] = 0x45;
@@ -200,9 +270,74 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = 0x45;
             code[i++] = desloDestino & 0xFF;
         }
+
+        else if (sscanf(linha, "v%d = call %d p0", &var, &num_func) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            int deslocamento_call;
+            unsigned int rel;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0x8B;
+            code[i++] = 0x7D;
+            code[i++] = 0xFC;
+
+            code[i++] = 0xE8;
+
+            deslocamento_call = function_start[num_func] - (i + 4);
+            rel = (unsigned int) deslocamento_call;
+
+            code[i++] = rel & 0xFF;
+            code[i++] = (rel >> 8) & 0xFF;
+            code[i++] = (rel >> 16) & 0xFF;
+            code[i++] = (rel >> 24) & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = p0 * p0", &var) == 1)
+        {
+            deslocamento_pilha = -8 - 4 * var;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x0F;
+            code[i++] = 0xAF;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = deslocamento_pilha & 0xFF;
+        }
+
         else if (strcmp(comando, "end") == 0)
         {
             epilogo(code, &i);
         }
     }
+    printf("\nBytes gerados:\n");
+    for (int j = 0; j < i; j++)
+    {
+        printf("%02X ", code[j]);
+    }
+    printf("\n");
 }
