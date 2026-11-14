@@ -109,7 +109,7 @@ soma_quadrados:
     movl %edi, -4(%rbp)
 
     # zret p0 $0
-    cmpl $0, -4(%rbp)
+    cmpl $0, -4(%rbp)   
     jne .Lsoma_rec
     movl $0, %eax
     leave
