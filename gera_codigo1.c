@@ -44,7 +44,8 @@ void gera_codigo (FILE *f, unsigned char code[], funcp *entry); {
         char c0;
         if (fscanf(myfp, "nd%c", &c0) != 1)
           error("comando invalido", line);
-        printf("end\n");
+        code[i++] = 0xxc9;
+        code[i++] = 0xc3;
         break;
       }
       case 'r': {  /* retorno incondicional */
