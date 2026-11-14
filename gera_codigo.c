@@ -116,6 +116,30 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = 0x45;
             code[i++] = deslocamento_pilha & 0xFF;
         }
+        else if (sscanf(linha, "v%d = p0 * p0", &var) == 1)
+        {
+            deslocamento_pilha = -8 - 4 * var;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x0F;
+            code[i++] = 0xAF;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = deslocamento_pilha & 0xFF;
+        }
         else if (sscanf(linha, "ret $%d", &valor) == 1)
         {
             code[i++] = 0xB8;

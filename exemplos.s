@@ -1,4 +1,3 @@
-
 .text
 
 # EXEMPLO 1: retorna uma constante
@@ -13,7 +12,6 @@ exemplo1:
     leave
     ret
 
-
 # EXEMPLO 2: f(x) = x + 1
 .globl exemplo2
 exemplo2:
@@ -21,16 +19,14 @@ exemplo2:
     movq %rsp, %rbp
     subq $32, %rsp
 
-    movl %edi, -4(%rbp)       # guarda p0
+    movl %edi, -4(%rbp)
     movl -4(%rbp), %eax
     addl $1, %eax
-    movl %eax, -8(%rbp)       # guarda v0
+    movl %eax, -8(%rbp)
 
     movl -8(%rbp), %eax
-
     leave
     ret
-
 
 # EXEMPLO 3: fatorial
 .globl fatorial
@@ -43,12 +39,12 @@ fatorial:
 
     # zret p0 $1
     cmpl $0, -4(%rbp)
-    jne .Lfact_rec
+    jne .LfatorialRec
     movl $1, %eax
     leave
     ret
 
-.Lfact_rec:
+.LfatorialRec:
     # v0 = p0 + $0
     movl -4(%rbp), %eax
     addl $0, %eax
@@ -71,7 +67,6 @@ fatorial:
 
     # ret v0
     movl -8(%rbp), %eax
-
     leave
     ret
 
@@ -94,10 +89,8 @@ quadrado:
 
     # ret v0
     movl -8(%rbp), %eax
-
     leave
     ret
-
 
 # Segunda função: soma dos quadrados de 1 até p0
 .globl soma_quadrados
@@ -138,6 +131,5 @@ soma_quadrados:
 
     # ret v0
     movl -8(%rbp), %eax
-
     leave
     ret
