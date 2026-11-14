@@ -1,3 +1,6 @@
+/*NOME:Gabriel Petillo
+Matricula: 2521319*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
