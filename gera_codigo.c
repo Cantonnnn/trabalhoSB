@@ -37,6 +37,7 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
     int param_salvo = 0; //ret $valor
     int function_start[50]; //ret vN
     int num_functions = 0; //end
+    int segunda;
     int deslocamento_pilha;
     *entry = NULL;
     while (fgets(linha, sizeof(linha), f) != NULL)
@@ -167,6 +168,234 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = desloDestino & 0xFF;
         }
 
+        else if (sscanf(linha, "v%d = v%d + $%d", &var, &origem, &valor) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            unsigned int constante = (unsigned int) valor;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            if (valor >= -128 && valor <= 127)
+            {
+                code[i++] = 0x83;
+                code[i++] = 0xC0;
+                code[i++] = valor & 0xFF;
+            }
+            else
+            {
+                code[i++] = 0x81;
+                code[i++] = 0xC0;
+                code[i++] = constante & 0xFF;
+                code[i++] = (constante >> 8) & 0xFF;
+                code[i++] = (constante >> 16) & 0xFF;
+                code[i++] = (constante >> 24) & 0xFF;
+            }
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = $%d + v%d", &var, &valor, &origem) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            unsigned int constante = (unsigned int) valor;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            if (valor >= -128 && valor <= 127)
+            {
+                code[i++] = 0x83;
+                code[i++] = 0xC0;
+                code[i++] = valor & 0xFF;
+            }
+            else
+            {
+                code[i++] = 0x81;
+                code[i++] = 0xC0;
+                code[i++] = constante & 0xFF;
+                code[i++] = (constante >> 8) & 0xFF;
+                code[i++] = (constante >> 16) & 0xFF;
+                code[i++] = (constante >> 24) & 0xFF;
+            }
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = $%d - v%d", &var, &valor, &origem) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            unsigned int constante = (unsigned int) valor;
+
+            code[i++] = 0xB8;
+            code[i++] = constante & 0xFF;
+            code[i++] = (constante >> 8) & 0xFF;
+            code[i++] = (constante >> 16) & 0xFF;
+            code[i++] = (constante >> 24) & 0xFF;
+
+            code[i++] = 0x2B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = $%d * v%d", &var, &valor, &origem) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            unsigned int constante = (unsigned int) valor;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x69;
+            code[i++] = 0xC0;
+            code[i++] = constante & 0xFF;
+            code[i++] = (constante >> 8) & 0xFF;
+            code[i++] = (constante >> 16) & 0xFF;
+            code[i++] = (constante >> 24) & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = $%d - p0", &var, &valor) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            unsigned int constante = (unsigned int) valor;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0xB8;
+            code[i++] = constante & 0xFF;
+            code[i++] = (constante >> 8) & 0xFF;
+            code[i++] = (constante >> 16) & 0xFF;
+            code[i++] = (constante >> 24) & 0xFF;
+
+            code[i++] = 0x2B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d * $%d", &var, &origem, &valor) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            unsigned int constante = (unsigned int) valor;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x69;
+            code[i++] = 0xC0;
+            code[i++] = constante & 0xFF;
+            code[i++] = (constante >> 8) & 0xFF;
+            code[i++] = (constante >> 16) & 0xFF;
+            code[i++] = (constante >> 24) & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d - v%d", &var, &origem, &segunda) == 3)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+            int desloSegunda = -8 - 4 * segunda;
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x2B;
+            code[i++] = 0x45;
+            code[i++] = desloSegunda & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d - p0", &var, &origem) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x2B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+        else if (sscanf(linha, "v%d = p0 - v%d", &var, &origem) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            /* carrega p0 em eax */
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            /* subtrai vM */
+            code[i++] = 0x2B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            /* guarda resultado */
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
         else if (sscanf(linha, "v%d = p0 - $%d", &var, &valor) == 2)
         {
             int desloDestino = -8 - 4 * var;
@@ -225,6 +454,32 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = desloDestino & 0xFF;
         }
 
+        else if (sscanf(linha, "v%d = v%d + p0", &var, &origem) == 2 || sscanf(linha, "v%d = p0 + v%d", &var, &origem) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x03;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
         else if (sscanf(linha, "v%d = v%d * v%d", &var, &origem, &num_func) == 3)
         {
             int desloDestino = -8 - 4 * var;
@@ -239,6 +494,33 @@ void gera_codigo(FILE *f, unsigned char code[], funcp *entry)
             code[i++] = 0xAF;
             code[i++] = 0x45;
             code[i++] = desloOrigem2 & 0xFF;
+
+            code[i++] = 0x89;
+            code[i++] = 0x45;
+            code[i++] = desloDestino & 0xFF;
+        }
+
+        else if (sscanf(linha, "v%d = v%d * p0", &var, &origem) == 2 || sscanf(linha, "v%d = p0 * v%d", &var, &origem) == 2)
+        {
+            int desloDestino = -8 - 4 * var;
+            int desloOrigem = -8 - 4 * origem;
+
+            if (!param_salvo)
+            {
+                code[i++] = 0x89;
+                code[i++] = 0x7D;
+                code[i++] = 0xFC;
+                param_salvo = 1;
+            }
+
+            code[i++] = 0x8B;
+            code[i++] = 0x45;
+            code[i++] = desloOrigem & 0xFF;
+
+            code[i++] = 0x0F;
+            code[i++] = 0xAF;
+            code[i++] = 0x45;
+            code[i++] = 0xFC;
 
             code[i++] = 0x89;
             code[i++] = 0x45;

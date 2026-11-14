@@ -17,7 +17,7 @@ int main(void)
     }
     gera_codigo(fp, code, &funcLBS);
     printf("Endereco da funcao: %p\n", (void *)funcLBS);
-    resultado = funcLBS(300);
+    resultado = funcLBS(10);
     printf("Resultado: %d\n", resultado);
     fclose(fp);
     return 0;
