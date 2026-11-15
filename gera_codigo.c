@@ -1,5 +1,5 @@
 /*Eduardo Canton Ferreira e Silva 2410837 3WC*/
-/**/
+/*Gabriel Petillo 2521319 3WC*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

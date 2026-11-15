@@ -12,7 +12,7 @@ static void error (const char *msg, int line) {
   exit(EXIT_FAILURE);
 }
 
-void gera_codigo (FILE *f, unsigned char code[], funcp *entry); {
+void gera_codigo (FILE *f, unsigned char code[], funcp *entry){
   int line = 1;
   int  c;
   FILE *myfp;
@@ -44,7 +44,7 @@ void gera_codigo (FILE *f, unsigned char code[], funcp *entry); {
         char c0;
         if (fscanf(myfp, "nd%c", &c0) != 1)
           error("comando invalido", line);
-        code[i++] = 0xxc9;
+        code[i++] = 0xc9;
         code[i++] = 0xc3;
         break;
       }
@@ -53,6 +53,9 @@ void gera_codigo (FILE *f, unsigned char code[], funcp *entry); {
         char var0;
         if (fscanf(myfp, "et %c%d", &var0, &idx0) != 2) 
           error("comando invalido", line);
+        code[i++] = 0x8b;
+        code[i++] = 0x45;
+        code[i++]= 0xf8;
         printf("ret %c%d\n", var0, idx0);
         break;
       }
@@ -61,6 +64,12 @@ void gera_codigo (FILE *f, unsigned char code[], funcp *entry); {
         char var0, var1;
         if (fscanf(myfp, "ret %c%d %c%d", &var0, &idx0, &var1, &idx1) != 4) 
           error("comando invalido", line);
+        code[i++] = 0x8b;
+        code[i++] = 0x7d;
+        code[i++] = 0xfc;
+        code[i++] = 0x00;
+        
+
         printf("zret %c%d %c%d\n", var0, idx0, var1, idx1);
         break;
       }
